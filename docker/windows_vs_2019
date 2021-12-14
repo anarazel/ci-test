@@ -1,7 +1,7 @@
 # escape=`
 
 # We used to use the visual studio container, but it's too outdated (&bloated) now
-FROM cirrusci/windowsservercore:2019
+FROM cirrusci/windowsservercore:2019-2021.12.07
 
 SHELL ["powershell", "-NoLogo", "-NoProfile", "-Command"]
 
