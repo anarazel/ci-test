@@ -6,8 +6,7 @@ task:
     memory: 4G
 
   test_script:
-    - dir c:\python
-    - c:\python\python.exe --version
+    - cat c:/docker/install_perl.ps1
 
 task:
   name: linux
