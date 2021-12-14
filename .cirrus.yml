@@ -8,3 +8,14 @@ task:
   test_script:
     - dir c:\python
     - c:\python\python.exe --version
+
+task:
+  name: windows vm test
+
+compute_engine_instance:
+  image_project: windows-cloud
+  image:  windows-2019
+  platform: windows
+
+  sysinfo_script:
+    - winver
