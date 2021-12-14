@@ -11,11 +11,10 @@ task:
 
 task:
   name: windows vm test
-
-compute_engine_instance:
-  image_project: windows-cloud
-  image: windows-server-2019-dc-v20211115
-  platform: windows
+  compute_engine_instance:
+    image_project: windows-cloud
+    image: windows-server-2019-dc-v20211115
+    platform: windows
 
   sysinfo_script:
     - winver
