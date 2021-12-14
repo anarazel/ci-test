@@ -1,8 +1,8 @@
 mkdir c:\t ; `
 cd c:\t ; `
 
-curl.exe -sSL -o python.exe https://www.python.org/ftp/python/3.10.1/python-3.10.1-amd64.exe ;
 echo 'installing python' ;
+curl.exe -sSL -o python.exe https://www.python.org/ftp/python/3.10.1/python-3.10.1-amd64.exe ;
 Start-Process -Wait -FilePath ".\python.exe" `
   -ArgumentList `
     '/quiet', 'SimpleInstall=1', 'PrependPath=1', 'CompileAll=1', `
