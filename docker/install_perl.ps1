@@ -1,7 +1,7 @@
 mkdir c:\t ;
 cd c:\t ;
 
-echo 'test2';
+echo 'test3';
 echo 'installing perl';
 curl.exe -sSL -o perl.zip `
     https://strawberryperl.com/download/5.26.3.1/strawberry-perl-5.26.3.1-64bit-portable.zip ;
