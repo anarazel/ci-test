@@ -1,0 +1,12 @@
+# escape=`
+
+# We used to use the visual studio container, but it's too outdated (&bloated) now
+FROM cirrusci/windowsservercore:2019
+
+SHELL ["powershell", "-NoLogo", "-NoProfile", "-Command"]
+
+COPY docker .
+
+RUN
+  docker\install_python.ps1
+  Remove-Item C:\docker -Force -Recurse

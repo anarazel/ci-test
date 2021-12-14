@@ -1,0 +1,10 @@
+task:
+  name: Windows
+  windows_container:
+    dockerfile: docker/windows_vs_2019
+    cpu: 4
+    memory: 4G
+
+  test_script:
+    - dir c:\python
+    - c:\python\python.exe --version
