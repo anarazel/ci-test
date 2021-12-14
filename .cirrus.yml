@@ -10,11 +10,9 @@ task:
     - c:\python\python.exe --version
 
 task:
-  name: windows vm test
-  compute_engine_instance:
-    image_project: windows-cloud
-    image: windows-server-2019-dc-v20211115
-    platform: windows
+  name: linux
+  container:
+    dockerfile: docker/linux
 
-  sysinfo_script:
-    - winver
+  test_script:
+    - cat /docker/install_perl.ps1
