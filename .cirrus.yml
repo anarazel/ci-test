@@ -14,7 +14,7 @@ task:
 
 compute_engine_instance:
   image_project: windows-cloud
-  image_family: windows-2019
+  image: windows-server-2019-dc-v20211115
   platform: windows
 
   sysinfo_script:
