@@ -1,7 +1,8 @@
 FROM debian:bullseye
 
+RUN mkdir docker
 
-COPY docker docker
+COPY docker/install_perl.ps1 docker/
 
 RUN \
   pwd && \
