@@ -5,7 +5,7 @@ FROM cirrusci/windowsservercore:2019-2021.12.07
 
 SHELL ["powershell", "-NoLogo", "-NoProfile", "-Command"]
 
-COPY docker docker
+COPY docker\install_perl.ps1 docker\install_python.ps1 docker
 
 RUN docker\install_python.ps1
 RUN docker\install_perl.ps1
