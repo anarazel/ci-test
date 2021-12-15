@@ -5,8 +5,6 @@ env:
 
 task:
   name: test-windows-container-vs-2019-amd64
-  depends_on:
-    - build-containers-windows
   windows_container:
     image: $GCP_REPO/windows_ci_vs_2019:latest
   test_script:
