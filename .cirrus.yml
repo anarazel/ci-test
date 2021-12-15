@@ -1,17 +1,39 @@
+env:
+  CIRRUS_LOG_TIMESTAMP: true
+  GCP_PROJECT: pg-vm-images-aio
+  GCP_REPO: us-docker.pkg.dev/$GCP_PROJECT/ci
+
 task:
-  name: Windows
+  name: test-windows-container-vs-2019-amd64
+  depends_on:
+    - build-containers-windows
   windows_container:
-    dockerfile: docker/windows_vs_2019
-    cpu: 4
-    memory: 4G
-
+    image: $GCP_REPO/windows_ci_vs_2019:latest
   test_script:
-    - cat c:/docker/install_perl.ps1
+    - set
+    - dir C:\BuildTools\VC\Auxiliary\Build
+    - ver
+    - where perl
+    - perl --version
+    - python --version
+    - vcvarsall x64
+    - bison --version
+    - flex --version
 
-task:
-  name: linux
-  container:
-    dockerfile: docker/linux
-
-  test_script:
-    - cat /docker/install_perl.ps1
+#task:
+#  name: Windows
+#  windows_container:
+#    dockerfile: docker/windows_vs_2019
+#    cpu: 4
+#    memory: 4G
+#
+#  test_script:
+#    - cat c:/docker/install_perl.ps1
+#
+#task:
+#  name: linux
+#  container:
+#    dockerfile: docker/linux
+#
+#  test_script:
+#    - cat /docker/install_perl.ps1
