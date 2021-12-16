@@ -9,25 +9,17 @@ task:
   container:
     image: $GCP_REPO/linux_debian_bullseye_ci:latest
   test_script:
+    - export
     - uname -a
     - apt-get update && apt-get install -y curl
     - curl ifconfig.me/all
-
 
 task:
   name: test-linux-container-amd64
   arm_container:
     image: $GCP_REPO/linux_debian_bullseye_ci:latest
   test_script:
-    - uname -a
-    - apt-get update && apt-get install -y curl
-    - curl ifconfig.me/all
-
-task:
-  name: test-linux-container-debian-amd64
-  container:
-    image: debian:bullseye
-  test_script:
+    - export
     - uname -a
     - apt-get update && apt-get install -y curl
     - curl ifconfig.me/all
@@ -50,8 +42,6 @@ task:
     - where perl
     - perl --version
     - python --version
-    - bison --version
-    - flex --version
     - curl ifconfig.me/all
 
 task:
