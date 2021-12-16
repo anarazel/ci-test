@@ -10,6 +10,7 @@ task:
     image: $GCP_REPO/linux_debian_bullseye_ci:latest
   test_script:
     - uname -a
+    - apt-get install curl
     - curl ifconfig.me/all
 
 
@@ -19,6 +20,7 @@ task:
     image: $GCP_REPO/linux_debian_bullseye_ci:latest
   test_script:
     - uname -a
+    - apt-get install curl
     - curl ifconfig.me/all
 
 task:
@@ -27,6 +29,7 @@ task:
     image: debian:bullseye
   test_script:
     - uname -a
+    - apt-get install curl
     - curl ifconfig.me/all
 
 task:
