@@ -1,0 +1,21 @@
+FROM debian:bullseye
+RUN \
+  export DEBIAN_FRONTEND=noninteractive && \
+  apt-get -y update && \
+  apt-get -y upgrade && \
+  apt-get -y --no-install-recommends install \
+    ca-certificates \
+    curl \
+    packer \
+    && \
+  echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] http://packages.cloud.google.com/apt cloud-sdk main" > \
+    /etc/apt/sources.list.d/google-cloud-sdk.list && \
+  curl \
+    --silent \
+    -o /usr/share/keyrings/cloud.google.gpg \
+    https://packages.cloud.google.com/apt/doc/apt-key.gpg && \
+  apt-get update -y && \
+  apt-get install --no-install-recommends -y \
+    google-cloud-sdk \
+    && \
+  apt-get clean && rm -rf /var/lib/apt/lists/*

@@ -1,7 +1,55 @@
 env:
   CIRRUS_LOG_TIMESTAMP: true
-  GCP_PROJECT: pg-vm-images-aio
+  GCP_PROJECT: pg-ci-images
   GCP_REPO: us-docker.pkg.dev/$GCP_PROJECT/ci
+
+
+task:
+  name: test-linux-container-amd64
+  container:
+    image: $GCP_REPO/linux_debian_bullseye_ci:latest
+  test_script:
+    - uname -a
+    - curl ifconfig.me/all
+
+
+task:
+  name: test-linux-container-amd64
+  arm_container:
+    image: $GCP_REPO/linux_debian_bullseye_ci:latest
+  test_script:
+    - uname -a
+    - curl ifconfig.me/all
+
+task:
+  name: test-linux-container-debian-amd64
+  container:
+    image: debian:bullseye
+  test_script:
+    - uname -a
+    - curl ifconfig.me/all
+
+task:
+  name: test-gcloud
+  container:
+    dockerfile: LinuxPackerDockerfile
+  test_script:
+    - gcloud info
+    - gcloud auth list
+
+task:
+  name: test-windows-container-base-amd64
+  windows_container:
+    image: $GCP_REPO/windows_ci_base:latest
+  test_script:
+    - set
+    - ver
+    - where perl
+    - perl --version
+    - python --version
+    - bison --version
+    - flex --version
+    - curl ifconfig.me/all
 
 task:
   name: test-windows-container-vs-2019-amd64
@@ -17,6 +65,7 @@ task:
     - vcvarsall x64
     - bison --version
     - flex --version
+    - curl ifconfig.me/all
 
 #task:
 #  name: Windows
