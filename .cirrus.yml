@@ -17,12 +17,23 @@ task:
     - id
     - uname -a
     - apt-get update && apt-get install -y curl procps
+    - ulimit -a -H
+    - ulimit -a -S
     - export
     - cat /proc/sys/kernel/core_pattern
     - sysctl kernel.core_pattern
     - sysctl kernel.core_pattern='/tmp/cores/%e-%s-%p.core' || true
     - cat /proc/sys/kernel/core_pattern
     #- curl ifconfig.me/all
+
+  test_core:
+    - ulimit -c unlimited
+    - /usr/bin/sleep 3600 &
+    - P=$!
+    - echo $P
+    - kill -SEGV $P
+    - ls -l core*
+    - ls -l /*core*
 
 
 task:
