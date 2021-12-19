@@ -9,7 +9,8 @@ task:
     - name: test-linux-container-amd64
       container:
         image: $GCP_REPO/linux_debian_bullseye_ci:latest
-    - arm_container:
+    - name: test-linux-container-aarch64
+      arm_container:
         image: $GCP_REPO/linux_debian_bullseye_ci:latest
 
   test_script:
