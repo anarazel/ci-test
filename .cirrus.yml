@@ -32,8 +32,9 @@ task:
     - P=$!
     - echo $P
     - kill -SEGV $P
-    - ls -l core*
-    - ls -l /*core*
+    - wait $P || true
+    - ls -l core* || true
+    - ls -l /*core* || true
 
 
 task:
