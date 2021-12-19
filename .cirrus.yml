@@ -25,7 +25,7 @@ task:
 
   test_core_script: |
     useradd -m postgres
-    su postgres <<-EOF
+    su postgres -s /bin/bash <<-"EOF"
       set -x
       ulimit -c unlimited
       /bin/sleep 60 &
