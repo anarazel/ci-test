@@ -21,6 +21,7 @@ task:
     - ulimit -a -S
     - export
     - cat /proc/sys/kernel/core_pattern
+    - cat /proc/sys/kernel/core_uses_pid
     - sysctl kernel.core_pattern
     - sysctl kernel.core_pattern='/tmp/cores/%e-%s-%p.core' || true
     - cat /proc/sys/kernel/core_pattern
@@ -39,6 +40,7 @@ task:
 
 task:
   name: test-windows-container-base-amd64
+  only_if: false
   windows_container:
     image: $GCP_REPO/windows_ci_base:latest
   test_script:
@@ -51,6 +53,7 @@ task:
 
 task:
   name: test-windows-container-vs-2019-amd64
+  only_if: false
   windows_container:
     image: $GCP_REPO/windows_ci_vs_2019:latest
   test_script:
@@ -64,21 +67,3 @@ task:
     - bison --version
     - flex --version
     - curl ifconfig.me/all
-
-#task:
-#  name: Windows
-#  windows_container:
-#    dockerfile: docker/windows_vs_2019
-#    cpu: 4
-#    memory: 4G
-#
-#  test_script:
-#    - cat c:/docker/install_perl.ps1
-#
-#task:
-#  name: linux
-#  container:
-#    dockerfile: docker/linux
-#
-#  test_script:
-#    - cat /docker/install_perl.ps1
