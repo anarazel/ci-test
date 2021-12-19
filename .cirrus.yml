@@ -17,9 +17,11 @@ task:
     - uname -a
     - apt-get update && apt-get install -y curl procps
     - export
+    - cat /proc/sys/kernel/core_pattern
     - sysctl kernel.core_pattern
     - sysctl kernel.core_pattern='/tmp/cores/%e-%s-%p.core' || true
-    - curl ifconfig.me/all
+    - cat /proc/sys/kernel/core_pattern
+    #- curl ifconfig.me/all
 
 
 task:
