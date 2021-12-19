@@ -29,9 +29,10 @@ task:
 
   test_core_script:
     - ulimit -c unlimited
-    - /usr/bin/sleep 3600 &
+    - su nobody -c /usr/bin/sleep 3600 &
     - P=$!
     - echo $P
+    - sleep 1
     - kill -SEGV $P
     - wait $P || true
     - ls -l core* || true
