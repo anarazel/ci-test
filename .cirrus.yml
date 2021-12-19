@@ -15,10 +15,10 @@ task:
   test_script:
     - id
     - uname -a
+    - apt-get update && apt-get install -y curl procps
+    - export
     - sysctl kernel.core_pattern
     - sysctl kernel.core_pattern='/tmp/cores/%e-%s-%p.core' || true
-    - export
-    - apt-get update && apt-get install -y curl
     - curl ifconfig.me/all
 
 
