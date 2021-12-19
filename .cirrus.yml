@@ -26,7 +26,9 @@ task:
   test_core_script: |
     useradd -m postgres
     su postgres <<-EOF
+      set -x
       ulimit -c unlimited
+      type sleep
       env sleep 3600 &
       P=$!
       echo $P
