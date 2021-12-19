@@ -5,32 +5,22 @@ env:
 
 
 task:
-  name: test-linux-container-amd64
-  container:
-    image: $GCP_REPO/linux_debian_bullseye_ci:latest
+  matrix:
+    - name: test-linux-container-amd64
+      container:
+        image: $GCP_REPO/linux_debian_bullseye_ci:latest
+    - arm_container:
+        image: $GCP_REPO/linux_debian_bullseye_ci:latest
+
   test_script:
-    - export
+    - id
     - uname -a
+    - sysctl kernel.core_pattern
+    - sysctl kernel.core_pattern='/tmp/cores/%e-%s-%p.core' || true
+    - export
     - apt-get update && apt-get install -y curl
     - curl ifconfig.me/all
 
-task:
-  name: test-linux-container-amd64
-  arm_container:
-    image: $GCP_REPO/linux_debian_bullseye_ci:latest
-  test_script:
-    - export
-    - uname -a
-    - apt-get update && apt-get install -y curl
-    - curl ifconfig.me/all
-
-task:
-  name: test-gcloud
-  container:
-    dockerfile: LinuxPackerDockerfile
-  test_script:
-    - gcloud info
-    - gcloud auth list
 
 task:
   name: test-windows-container-base-amd64
