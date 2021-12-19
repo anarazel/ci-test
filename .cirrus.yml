@@ -16,7 +16,7 @@ task:
   test_script:
     - id
     - uname -a
-    #- apt-get update && apt-get install -y curl procps
+    - apt-get update && apt-get install -y curl procps
     - ulimit -a -H
     - ulimit -a -S
     - export
