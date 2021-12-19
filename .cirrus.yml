@@ -28,8 +28,7 @@ task:
     su postgres <<-EOF
       set -x
       ulimit -c unlimited
-      type sleep
-      env sleep 3600 &
+      /bin/sleep 60 &
       P=$!
       echo $P
       sleep 1
