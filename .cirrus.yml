@@ -26,7 +26,7 @@ task:
     - cat /proc/sys/kernel/core_pattern
     #- curl ifconfig.me/all
 
-  test_core:
+  test_core_script:
     - ulimit -c unlimited
     - /usr/bin/sleep 3600 &
     - P=$!
