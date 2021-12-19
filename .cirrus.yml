@@ -23,18 +23,19 @@ task:
     - cat /proc/sys/kernel/core_pattern
     - cat /proc/sys/kernel/core_uses_pid
 
-  test_core_script:
-    - ulimit -c unlimited
-    - useradd -m postgres
-    - su postgres -c "env sleep 3600" &
-    - P=$!
-    - echo $P
-    - sleep 1
-    - kill -SEGV $P
-    - wait $P || true
-    - ls -l core* || true
-    - ls -l /*core* || true
-
+  test_core_script: |
+    useradd -m postgres
+    su postgres <<-EOF
+      ulimit -c unlimited
+      env sleep 3600 &
+      P=$!
+      echo $P
+      sleep 1
+      kill -SEGV $P
+      wait $P || true
+      ls -l core* || true
+      ls -l /*core* || true
+    EOF
 
 task:
   name: test-windows-container-base-amd64
