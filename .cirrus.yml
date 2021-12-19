@@ -27,6 +27,8 @@ task:
     useradd -m postgres
     su postgres -s /bin/bash <<-"EOF"
       set -x
+      cd /tmp
+      touch core.test
       ulimit -c unlimited
       /bin/sleep 60 &
       P=$!
