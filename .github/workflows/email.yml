@@ -21,15 +21,14 @@ jobs:
           echo "Cirrus CI ${{ github.event.check_suite.conclusion }} on ${{ github.event.check_suite.head_branch }} branch!"
           echo
           echo "git sha: ${{ github.event.check_suite.head_sha }}"
-          echo "github commit: ${GITHUB_URL}${{ github.event.check_suite.head_sha }}"
+          echo "github commit: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/${{ github.event.check_suite.head_sha }}"
           echo "cirrus: ${CHECK_DETAILS_URL}"
           echo "github action: $CHECK_RUN_URL"
           echo
           echo "message: >$MESSAGE<"
           echo
-          echo "##[error]details: $CHECK_RUN_URL
+          echo "##[error]details: $CHECK_RUN_URL"
           false
         env:
-          GITHUB_URL: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/${{ github.event.check_suite.head_sha }}"
           CHECK_DETAILS_URL: ${{ fromJson(steps.get_failed_check_run.outputs.data).check_runs[0].details_url }}
           CHECK_RUN_URL: ${{ fromJson(steps.get_failed_check_run.outputs.data).check_runs[0].html_url }}
