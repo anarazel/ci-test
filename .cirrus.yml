@@ -3,15 +3,59 @@ env:
   GCP_PROJECT: pg-ci-images
   GCP_REPO: us-docker.pkg.dev/$GCP_PROJECT/ci
 
+branch_setup: &branch_setup
+  env:
+    VAR_LINUX: "i am linux"
+    VAR_WINDOWS: "i am windows"
+    VAR: ${VAR_${CIRRUS_OS}}
+    MODE: $CIRRUS_BRANCH == 'main'
+
+  gcp_key_file:
+    path: frak
+    variable_name: GAC
+
+  branch_key_script:
+    - cat frak
+
+  branch_script:
+    - echo $CIRRUS_ENV || true
+    - echo %CIRRUS_ENV% || true
+    - echo $MODE || true
+    - echo %MODE% || true
+    - echo $LATER || true
+    - echo %LATER% || true
 
 task:
+  <<: *branch_setup
+
   matrix:
     - name: test-linux-container-amd64
       container:
         image: $GCP_REPO/linux_debian_bullseye_ci:latest
-    - name: test-linux-container-aarch64
-      arm_container:
-        image: $GCP_REPO/linux_debian_bullseye_ci:latest
+    #- name: test-linux-container-aarch64
+    #  arm_container:
+    #    image: $GCP_REPO/linux_debian_bullseye_ci:latest
+
+  extend_var_script:
+    - set -x
+    - ls -l $CIRRUS_ENV
+    - cat $CIRRUS_ENV
+    - echo BLUB=blarg2 >> $CIRRUS_ENV
+    - cat $CIRRUS_ENV
+
+  test_var_script:
+    - echo $BLUB
+
+  env:
+    BEFORE: before
+    BEFORE_OVERWRITE: before-overwrite
+
+  test_env_overwrite_script:
+    - export
+
+  env:
+    AFTER: after
+    BEFORE_OVERWRITE: ${BEFORE_OVERWRITE}-after
 
   test_script:
     - id
@@ -40,32 +84,33 @@ task:
       ls -l /*core* || true
     EOF
 
-task:
-  name: test-windows-container-base-amd64
-  only_if: false
-  windows_container:
-    image: $GCP_REPO/windows_ci_base:latest
-  test_script:
-    - set
-    - ver
-    - where perl
-    - perl --version
-    - python --version
-    - curl ifconfig.me/all
 
 task:
   name: test-windows-container-vs-2019-amd64
   only_if: false
+  <<: *branch_setup
+
   windows_container:
-    image: $GCP_REPO/windows_ci_vs_2019:latest
+    image: $GCP_REPO/windows_ci_base:latest
+
+  extend_var_script:
+    - type %CIRRUS_ENV%
+    - echo BLUB=blarg >> %CIRRUS_ENV%
+    - type %CIRRUS_ENV%
+
+  test_var_script:
+    - echo %BLUB%
+
   test_script:
+    - systeminfo
     - set
-    - dir C:\BuildTools\VC\Auxiliary\Build
-    - ver
-    - where perl
-    - perl --version
-    - python --version
-    - vcvarsall x64
-    - bison --version
-    - flex --version
-    - curl ifconfig.me/all
+#    - dir C:\BuildTools\VC\Auxiliary\Build
+#    - ver
+#    - where perl
+#    - perl --version
+#    - python --version
+#    - vcvarsall x64
+#    - bison --version
+#    - flex --version
+#    - curl ifconfig.me/all
+#    - curl ifconfig.me/
