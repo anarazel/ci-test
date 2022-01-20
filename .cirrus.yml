@@ -3,34 +3,37 @@ env:
   GCP_PROJECT: pg-ci-images
   GCP_REPO: us-docker.pkg.dev/$GCP_PROJECT/ci
 
-  GAC_LOCAL_DEV: ENCRYPTED[292a6a378b4a9a101303fa71f9274aeecf5806ae27f84d3e77799d2493fd10a324e535321d771b59c668ea56ded57c6c]
-  GAC_LOCAL_MAIN: ENCRYPTED[b4dbdf6bb056b61ae3d421730c3c2656b4ab00abbab982cbb3e376d8f5bc633f9b782ef9133cda882f1104cd74a264eb]
-
 branch_setup: &branch_setup
   env:
+    GOOGLE_APPLICATION_CREDENTIALS: /gcp-service-account.json
+
     VAR_LINUX: "i am linux"
     VAR_WINDOWS: "i am windows"
-    TEST_REDACT_DEV: secret-contents-dev
-    TEST_REDACT_MAIN: secret-contents-main
 
-  gcp_key_file:
-    path: frak
-    variable_name: GAC
+    GAC_LOCAL_DEV: ENCRYPTED[292a6a378b4a9a101303fa71f9274aeecf5806ae27f84d3e77799d2493fd10a324e535321d771b59c668ea56ded57c6c]
+    GAC_LOCAL_MAIN: ENCRYPTED[b4dbdf6bb056b61ae3d421730c3c2656b4ab00abbab982cbb3e376d8f5bc633f9b782ef9133cda882f1104cd74a264eb]
+
+
+  set_key_script: |
+    if [ "$CIRRUS_BRANCH" = 'main' ]; then
+      echo "$GAC_LOCAL_MAIN" > $GOOGLE_APPLICATION_CREDENTIALS
+    else
+      echo "$GAC_LOCAL_DEV" > $GOOGLE_APPLICATION_CREDENTIALS
+    fi
 
   branch_key_script:
-    - cat frak
+    - sec=$(cat $GOOGLE_APPLICATION_CREDENTIALS)
+    - if [ "$sec" = "$GAC_LOCAL_MAIN" ] ; then echo sec-is-main; else echo sec-not-main; fi
+    - if [ "$sec" = "$GAC_LOCAL_DEV" ] ; then echo sec-is-dev; else echo sec-not-dev; fi
+
+
+task:
+  name: no-secrets
+  container:
+    image: $GCP_REPO/linux_debian_bullseye_ci:latest
+
+  test_script:
     - export
-    - echo $GAC_LOCAL > foo
-    - cat foo
-    - echo $GAC_LOCAL
-    - echo secret-contents-main
-    - echo secret-contents-dev
-    - echo "foo-$TEST_REDACT_DEV-bar"
-    - set -x
-    - if [ "$GAC_LOCAL" = 'secret-contents-main' ] ; then echo true; else echo false; fi
-    - if [ "$GAC_LOCAL" = 'secret-contents-dev' ] ; then echo true; else echo false; fi
-    - if [ "$GAC_LOCAL" = "$GAC_LOCAL_MAIN"] ; then echo true; else echo false; fi
-    - if [ "$GAC_LOCAL" = "$GAC_LOCAL_DEV" ] ; then echo true; else echo false; fi
 
 task:
   <<: *branch_setup
@@ -73,6 +76,7 @@ task:
     - export
     - cat /proc/sys/kernel/core_pattern
     - cat /proc/sys/kernel/core_uses_pid
+    - locale -a
 
   test_core_script: |
     useradd -m postgres
@@ -119,5 +123,4 @@ task:
 #    - vcvarsall x64
 #    - bison --version
 #    - flex --version
-#    - curl ifconfig.me/all
 #    - curl ifconfig.me/
