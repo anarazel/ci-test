@@ -3,14 +3,13 @@ env:
   GCP_PROJECT: pg-ci-images
   GCP_REPO: us-docker.pkg.dev/$GCP_PROJECT/ci
 
-  GAC_DEV: ENCRYPTED[292a6a378b4a9a101303fa71f9274aeecf5806ae27f84d3e77799d2493fd10a324e535321d771b59c668ea56ded57c6c]
-  GAC_MAIN: ENCRYPTED[b4dbdf6bb056b61ae3d421730c3c2656b4ab00abbab982cbb3e376d8f5bc633f9b782ef9133cda882f1104cd74a264eb]
+  GAC_LOCAL_DEV: ENCRYPTED[292a6a378b4a9a101303fa71f9274aeecf5806ae27f84d3e77799d2493fd10a324e535321d771b59c668ea56ded57c6c]
+  GAC_LOCAL_MAIN: ENCRYPTED[b4dbdf6bb056b61ae3d421730c3c2656b4ab00abbab982cbb3e376d8f5bc633f9b782ef9133cda882f1104cd74a264eb]
 
 branch_setup: &branch_setup
   env:
     VAR_LINUX: "i am linux"
     VAR_WINDOWS: "i am windows"
-    MODE: $CIRRUS_BRANCH == 'main'
 
   gcp_key_file:
     path: frak
