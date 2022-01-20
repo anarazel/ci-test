@@ -10,7 +10,7 @@ branch_setup: &branch_setup
   env:
     VAR_LINUX: "i am linux"
     VAR_WINDOWS: "i am windows"
-    TEST_REDACT_DEV: secret-contents-main
+    TEST_REDACT_DEV: secret-contents-dev
     TEST_REDACT_MAIN: secret-contents-main
 
   gcp_key_file:
@@ -25,12 +25,12 @@ branch_setup: &branch_setup
     - echo $GAC_LOCAL
     - echo secret-contents-main
     - echo secret-contents-dev
+    - echo "foo-$TEST_REDACT_DEV-bar"
     - set -x
-    - test "$GAC_LOCAL" = 'secret-contents-main'  ; echo $?; true
+    - if [ "$GAC_LOCAL" = 'secret-contents-main' ] ; then echo true; else echo false; fi
     - if [ "$GAC_LOCAL" = 'secret-contents-dev' ] ; then echo true; else echo false; fi
-    - test "$GAC_LOCAL" = 'secret-contents-dev'  ; echo $?; true
-    - test "$GAC_LOCAL" = "$GAC_LOCAL_MAIN"  ; echo $?; true
-    - test "$GAC_LOCAL" = "$GAC_LOCAL_DEV"  ; echo $?; true
+    - if [ "$GAC_LOCAL" = "$GAC_LOCAL_MAIN"] ; then echo true; else echo false; fi
+    - if [ "$GAC_LOCAL" = "$GAC_LOCAL_DEV" ] ; then echo true; else echo false; fi
 
 task:
   <<: *branch_setup
