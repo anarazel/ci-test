@@ -10,6 +10,8 @@ branch_setup: &branch_setup
   env:
     VAR_LINUX: "i am linux"
     VAR_WINDOWS: "i am windows"
+    TEST_REDACT_DEV: secret-contents-main
+    TEST_REDACT_MAIN: secret-contents-main
 
   gcp_key_file:
     path: frak
@@ -18,14 +20,15 @@ branch_setup: &branch_setup
   branch_key_script:
     - cat frak
     - export
-
-  branch_script:
-    - echo $CIRRUS_ENV || true
-    - echo %CIRRUS_ENV% || true
-    - echo $MODE || true
-    - echo %MODE% || true
-    - echo $LATER || true
-    - echo %LATER% || true
+    - echo $GAC_LOCAL > foo
+    - cat foo
+    - echo $GAC_LOCAL
+    - echo secret-contents-main
+    - echo secret-contents-dev
+    - test "$GAC_LOCAL" = 'secret-contents-main'  ; echo $?
+    - test "$GAC_LOCAL" = 'secret-contents-dev'  ; echo $?
+    - test "$GAC_LOCAL" = "$GAC_LOCAL_MAIN"  ; echo $?
+    - test "$GAC_LOCAL" = "$GAC_LOCAL_DEV"  ; echo $?
 
 task:
   <<: *branch_setup
