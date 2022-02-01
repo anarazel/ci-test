@@ -28,6 +28,7 @@ branch_setup: &branch_setup
 
 
 task:
+  only_if: false
   name: no-secrets
   container:
     image: $GCP_REPO/linux_debian_bullseye_ci:latest
@@ -36,6 +37,7 @@ task:
     - export
 
 task:
+  only_if: false
   <<: *branch_setup
 
   matrix:
@@ -98,19 +100,10 @@ task:
 
 task:
   name: test-windows-container-vs-2019-amd64
-  only_if: false
-  <<: *branch_setup
+  #<<: *branch_setup
 
   windows_container:
     image: $GCP_REPO/windows_ci_base:latest
-
-  extend_var_script:
-    - type %CIRRUS_ENV%
-    - echo BLUB=blarg >> %CIRRUS_ENV%
-    - type %CIRRUS_ENV%
-
-  test_var_script:
-    - echo %BLUB%
 
   test_script:
     - systeminfo
@@ -124,3 +117,10 @@ task:
 #    - bison --version
 #    - flex --version
 #    - curl ifconfig.me/
+
+  env:
+    FOO: I am fooness
+
+  test_env_script:
+    - echo %FOO%
+    - echo ${FOO}
