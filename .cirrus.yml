@@ -118,9 +118,7 @@ task:
 #    - flex --version
 #    - curl ifconfig.me/
 
-  env:
-    FOO: I am fooness
-
-  test_env_script:
-    - echo %FOO%
-    - echo ${FOO}
+  test_multiline_script: |
+    echo not yet a comment
+    # this is a comment
+    echo this is after the comment
