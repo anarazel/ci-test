@@ -1,6 +1,6 @@
 env:
   CIRRUS_LOG_TIMESTAMP: true
-  GCP_PROJECT: pg-ci-images
+  GCP_PROJECT: pg-ci-images-dev
   GCP_REPO: us-docker.pkg.dev/$GCP_PROJECT/ci
 
 branch_setup: &branch_setup
@@ -97,8 +97,19 @@ task:
       ls -l /*core* || true
     EOF
 
+task:
+  name: test-windows-container-ming64-amd64
+  #<<: *branch_setup
+
+  windows_container:
+    image: $GCP_REPO/windows_ci_mingw64:latest
+
+  test_script:
+    - systeminfo
+    - set
 
 task:
+  only_if: false
   name: test-windows-container-vs-2019-amd64
   #<<: *branch_setup
 
@@ -117,8 +128,3 @@ task:
 #    - bison --version
 #    - flex --version
 #    - curl ifconfig.me/
-
-  test_multiline_script: |
-    echo not yet a comment
-    # this is a comment
-    echo this is after the comment
