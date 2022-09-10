@@ -28,6 +28,17 @@ branch_setup: &branch_setup
 
 
 task:
+  name: Test Windows 2022
+  compute_engine_instance:
+    image_project: windows-cloud
+    image: family/windows-2022
+    platform: windows
+
+  test_script:
+    - ver
+
+
+task:
   only_if: false
   name: no-secrets
   container:
@@ -98,6 +109,7 @@ task:
     EOF
 
 task:
+  only_if: false
   name: test-windows-container-ming64-amd64
   #<<: *branch_setup
 
