@@ -1,0 +1,9 @@
+linux_instance: &linux_instance
+  compute_engine_instance:
+    image_project: $IMAGE_PROJECT
+    image: family/$image_family
+
+
+macos_instance: &macos_instance
+  macos_instance:
+    image: $image

@@ -1,142 +1,254 @@
 env:
   CIRRUS_LOG_TIMESTAMP: true
-  GCP_PROJECT: pg-ci-images-dev
-  GCP_REPO: us-docker.pkg.dev/$GCP_PROJECT/ci
+  IMAGE_PROJECT: pg-ci-images
+  BUILD_METHOD: ours
+  DISK_SIZE: 25
 
-branch_setup: &branch_setup
+gcp_credentials:
+  workload_identity_provider: projects/1072892761768/locations/global/workloadIdentityPools/cirrus-ci-pool/providers/cirrus-oidc
+  service_account: cirrus-ci@pg-ci-runs.iam.gserviceaccount.com
+
+gce_instance:
+  image_project: $IMAGE_PROJECT
+  type: t2d-standard-1
+  spot: true
+  zone: us-west1-a
+  #cpu: 4
+  #memory: 8
+  disk: $DISK_SIZE
+  use_ssd: true
+
+
+macos_instance_kind: &macos_instance_kind
+  - only_if: $BUILD_METHOD == 'ours'
+    persistent_worker:
+      isolation:
+        tart:
+          image: $image
+          user: admin
+          password: admin
+
+  - only_if: $BUILD_METHOD == 'cirrus'
+    macos_instance:
+      image: $image
+
+vm_instance_kind: &vm_instance_kind
+  - only_if: $BUILD_METHOD == 'ours'
+    gce_instance:
+      image_family: $IMAGE_FAMILY
+      platform: $PLATFORM
+
+  - only_if: $BUILD_METHOD == 'cirrus'
+    compute_engine_instance:
+      image: family/$IMAGE_FAMILY
+      platform: $PLATFORM
+
+
+task:
+  matrix:
+    - env:
+        PLATFORM: linux
+        IMAGE_FAMILY: pg-ci-bullseye
+#    - env:
+#        PLATFORM: netbsd
+#        IMAGE_FAMILY: pg-ci-netbsd-postgres-9-3
+#    - env:
+#        PLATFORM: openbsd
+#        IMAGE_FAMILY: pg-ci-openbsd-postgres-7-2
+#    - env:
+#        PLATFORM: freebsd
+#        IMAGE_FAMILY: pg-ci-freebsd-13
+#    - env:
+#        PLATFORM: windows
+#        IMAGE_FAMILY: pg-ci-windows-ci-vs-2019
+#        DISK_SIZE: 50
+
+  name: test $PLATFORM
+
+  matrix: *vm_instance_kind
+
+  test_script:
+    - whoami
+    - uname -a
+    - sleep 5
+
+task:
+  name: some macos task
   env:
-    GOOGLE_APPLICATION_CREDENTIALS: /gcp-service-account.json
-
-    VAR_LINUX: "i am linux"
-    VAR_WINDOWS: "i am windows"
-
-    GAC_LOCAL_DEV: ENCRYPTED[292a6a378b4a9a101303fa71f9274aeecf5806ae27f84d3e77799d2493fd10a324e535321d771b59c668ea56ded57c6c]
-    GAC_LOCAL_MAIN: ENCRYPTED[b4dbdf6bb056b61ae3d421730c3c2656b4ab00abbab982cbb3e376d8f5bc633f9b782ef9133cda882f1104cd74a264eb]
-
-
-  set_key_script: |
-    if [ "$CIRRUS_BRANCH" = 'main' ]; then
-      echo "$GAC_LOCAL_MAIN" > $GOOGLE_APPLICATION_CREDENTIALS
-    else
-      echo "$GAC_LOCAL_DEV" > $GOOGLE_APPLICATION_CREDENTIALS
-    fi
-
-  branch_key_script:
-    - sec=$(cat $GOOGLE_APPLICATION_CREDENTIALS)
-    - if [ "$sec" = "$GAC_LOCAL_MAIN" ] ; then echo sec-is-main; else echo sec-not-main; fi
-    - if [ "$sec" = "$GAC_LOCAL_DEV" ] ; then echo sec-is-dev; else echo sec-not-dev; fi
-
-
-task:
-  name: Test Windows 2022
-  compute_engine_instance:
-    image_project: windows-cloud
-    image: family/windows-2022
-    platform: windows
-
-  test_script:
-    - ver
-
-
-task:
-  only_if: false
-  name: no-secrets
-  container:
-    image: $GCP_REPO/linux_debian_bullseye_ci:latest
-
-  test_script:
-    - export
-
-task:
-  only_if: false
-  <<: *branch_setup
+    image: ghcr.io/cirruslabs/macos-ventura-base:latest
 
   matrix:
-    - name: test-linux-container-amd64
-      container:
-        image: $GCP_REPO/linux_debian_bullseye_ci:latest
-    #- name: test-linux-container-aarch64
-    #  arm_container:
-    #    image: $GCP_REPO/linux_debian_bullseye_ci:latest
+    <<: *macos_instance_kind
 
-  extend_var_script:
-    - set -x
-    - ls -l $CIRRUS_ENV
-    - cat $CIRRUS_ENV
-    - echo BLUB=blarg2 >> $CIRRUS_ENV
-    - cat $CIRRUS_ENV
+  test_script: echo test
+  ip_script:
+    - curl ifconfig.me/all
+    - echo
 
-  test_var_script:
-    - echo $BLUB
+#
+#  sysinfo_script: |
+#    uname -a
+#    cat /proc/cmdline
+#    ulimit -a -H && ulimit -a -S
+#    export
+#    cat /proc/cpuinfo
+#
+#  test_script: |
+#    sleep 30
 
-  env:
-    BEFORE: before
-    BEFORE_OVERWRITE: before-overwrite
+#task:
+#  name: some linux task
+#  env:
+#    image_family: some-image
+#  <<: *linux_instance
+#
+#
+#task:
+#  name: some macos task
+#  env:
+#    image: ghcr.io/cirruslabs/macos-ventura-base:latest
+#  <<: *macos_instance
 
-  test_env_overwrite_script:
-    - export
-
-  env:
-    AFTER: after
-    BEFORE_OVERWRITE: ${BEFORE_OVERWRITE}-after
-
-  test_script:
-    - id
-    - uname -a
-    - apt-get update && apt-get install -y curl procps
-    - ulimit -a -H
-    - ulimit -a -S
-    - export
-    - cat /proc/sys/kernel/core_pattern
-    - cat /proc/sys/kernel/core_uses_pid
-    - locale -a
-
-  test_core_script: |
-    useradd -m postgres
-    su postgres -s /bin/bash <<-"EOF"
-      set -x
-      cd /tmp
-      touch core.test
-      ulimit -c unlimited
-      /bin/sleep 60 &
-      P=$!
-      echo $P
-      sleep 1
-      kill -SEGV $P
-      wait $P || true
-      ls -l core* || true
-      ls -l /*core* || true
-    EOF
-
-task:
-  only_if: false
-  name: test-windows-container-ming64-amd64
-  #<<: *branch_setup
-
-  windows_container:
-    image: $GCP_REPO/windows_ci_mingw64:latest
-
-  test_script:
-    - systeminfo
-    - set
-
-task:
-  only_if: false
-  name: test-windows-container-vs-2019-amd64
-  #<<: *branch_setup
-
-  windows_container:
-    image: $GCP_REPO/windows_ci_base:latest
-
-  test_script:
-    - systeminfo
-    - set
-#    - dir C:\BuildTools\VC\Auxiliary\Build
+#env:
+#  CIRRUS_LOG_TIMESTAMP: true
+#  GCP_PROJECT: pg-ci-images-dev
+#  GCP_REPO: us-docker.pkg.dev/$GCP_PROJECT/ci
+#
+#branch_setup: &branch_setup
+#  env:
+#    GOOGLE_APPLICATION_CREDENTIALS: /gcp-service-account.json
+#
+#    VAR_LINUX: "i am linux"
+#    VAR_WINDOWS: "i am windows"
+#
+#    GAC_LOCAL_DEV: ENCRYPTED[292a6a378b4a9a101303fa71f9274aeecf5806ae27f84d3e77799d2493fd10a324e535321d771b59c668ea56ded57c6c]
+#    GAC_LOCAL_MAIN: ENCRYPTED[b4dbdf6bb056b61ae3d421730c3c2656b4ab00abbab982cbb3e376d8f5bc633f9b782ef9133cda882f1104cd74a264eb]
+#
+#
+#  set_key_script: |
+#    if [ "$CIRRUS_BRANCH" = 'main' ]; then
+#      echo "$GAC_LOCAL_MAIN" > $GOOGLE_APPLICATION_CREDENTIALS
+#    else
+#      echo "$GAC_LOCAL_DEV" > $GOOGLE_APPLICATION_CREDENTIALS
+#    fi
+#
+#  branch_key_script:
+#    - sec=$(cat $GOOGLE_APPLICATION_CREDENTIALS)
+#    - if [ "$sec" = "$GAC_LOCAL_MAIN" ] ; then echo sec-is-main; else echo sec-not-main; fi
+#    - if [ "$sec" = "$GAC_LOCAL_DEV" ] ; then echo sec-is-dev; else echo sec-not-dev; fi
+#
+#
+#task:
+#  name: Test Windows 2022
+#  compute_engine_instance:
+#    image_project: windows-cloud
+#    image: family/windows-2022
+#    platform: windows
+#
+#  test_script:
 #    - ver
-#    - where perl
-#    - perl --version
-#    - python --version
-#    - vcvarsall x64
-#    - bison --version
-#    - flex --version
-#    - curl ifconfig.me/
+#
+#
+#task:
+#  only_if: false
+#  name: no-secrets
+#  container:
+#    image: $GCP_REPO/linux_debian_bullseye_ci:latest
+#
+#  test_script:
+#    - export
+#
+#task:
+#  only_if: false
+#  <<: *branch_setup
+#
+#  matrix:
+#    - name: test-linux-container-amd64
+#      container:
+#        image: $GCP_REPO/linux_debian_bullseye_ci:latest
+#    #- name: test-linux-container-aarch64
+#    #  arm_container:
+#    #    image: $GCP_REPO/linux_debian_bullseye_ci:latest
+#
+#  extend_var_script:
+#    - set -x
+#    - ls -l $CIRRUS_ENV
+#    - cat $CIRRUS_ENV
+#    - echo BLUB=blarg2 >> $CIRRUS_ENV
+#    - cat $CIRRUS_ENV
+#
+#  test_var_script:
+#    - echo $BLUB
+#
+#  env:
+#    BEFORE: before
+#    BEFORE_OVERWRITE: before-overwrite
+#
+#  test_env_overwrite_script:
+#    - export
+#
+#  env:
+#    AFTER: after
+#    BEFORE_OVERWRITE: ${BEFORE_OVERWRITE}-after
+#
+#  test_script:
+#    - id
+#    - uname -a
+#    - apt-get update && apt-get install -y curl procps
+#    - ulimit -a -H
+#    - ulimit -a -S
+#    - export
+#    - cat /proc/sys/kernel/core_pattern
+#    - cat /proc/sys/kernel/core_uses_pid
+#    - locale -a
+#
+#  test_core_script: |
+#    useradd -m postgres
+#    su postgres -s /bin/bash <<-"EOF"
+#      set -x
+#      cd /tmp
+#      touch core.test
+#      ulimit -c unlimited
+#      /bin/sleep 60 &
+#      P=$!
+#      echo $P
+#      sleep 1
+#      kill -SEGV $P
+#      wait $P || true
+#      ls -l core* || true
+#      ls -l /*core* || true
+#    EOF
+#
+#task:
+#  only_if: false
+#  name: test-windows-container-ming64-amd64
+#  #<<: *branch_setup
+#
+#  windows_container:
+#    image: $GCP_REPO/windows_ci_mingw64:latest
+#
+#  test_script:
+#    - systeminfo
+#    - set
+#
+#task:
+#  only_if: false
+#  name: test-windows-container-vs-2019-amd64
+#  #<<: *branch_setup
+#
+#  windows_container:
+#    image: $GCP_REPO/windows_ci_base:latest
+#
+#  test_script:
+#    - systeminfo
+#    - set
+##    - dir C:\BuildTools\VC\Auxiliary\Build
+##    - ver
+##    - where perl
+##    - perl --version
+##    - python --version
+##    - vcvarsall x64
+##    - bison --version
+##    - flex --version
+##    - curl ifconfig.me/
+#

@@ -1,0 +1,10 @@
+linux_instance: &linux_instance
+  gce_instance:
+    image_project: $IMAGE_PROJECT
+    image_family: $image_family
+
+macos_instance: &macos_instance
+  persistent_worker:
+  isolation:
+    tart:
+      image: $image

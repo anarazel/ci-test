@@ -1,4 +1,4 @@
-load("cirrus", "env")
+load("cirrus", "env", "fs", "yaml")
 
 def main():
     additional_env = {}
@@ -12,6 +12,11 @@ def main():
         additional_env['GAC_LOCAL'] = '$GAC_LOCAL_DEV'
         additional_env['VAR'] = '$VAR_MAIN'
 
-    return [
-      ('env', additional_env),
-      ('frak', env)]
+    if env.get("BUILD_METHOD") == "ours":
+        instancefile = ".cirrus.ours.yml"
+    else:
+        instancefile = ".cirrus.cirrus.yml"
+
+    return {'env': additional_env}
+    #instanceyaml = yaml.loads(fs.read(instancefile))
+    #return instanceyaml | {'env': additional_env}
