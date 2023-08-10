@@ -4,6 +4,8 @@ env:
   # ours or cirrus
   BUILD_METHOD: ours
   DISK_SIZE: 25
+  FRAK: $DISK_SIZE == 3
+  DISK_SIZE2: $DISK_SIZE
 
 gcp_credentials:
   workload_identity_provider: projects/1072892761768/locations/global/workloadIdentityPools/cirrus-ci-pool/providers/cirrus-oidc
@@ -56,6 +58,8 @@ task:
     - env:
         PLATFORM: linux
         IMAGE_FAMILY: pg-ci-bullseye
+        DISK_SIZE3: $DISK_SIZE
+
 #    - env:
 #        PLATFORM: netbsd
 #        IMAGE_FAMILY: pg-ci-netbsd-postgres-9-3
@@ -75,6 +79,10 @@ task:
   matrix: *vm_instance_kind
 
   test_script:
+    - echo $FRAK
+    - echo $DISK_SIZE
+    - echo $DISK_SIZE2
+    - echo $DISK_SIZE3
     - whoami
     - uname -a
     - sleep 5
