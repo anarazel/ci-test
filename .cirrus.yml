@@ -1,6 +1,7 @@
 env:
   CIRRUS_LOG_TIMESTAMP: true
   IMAGE_PROJECT: pg-ci-images
+  # ours or cirrus
   BUILD_METHOD: ours
   DISK_SIZE: 25
 
@@ -18,6 +19,9 @@ gce_instance:
   disk: $DISK_SIZE
   use_ssd: true
 
+compute_engine_instance:
+  image_project: $IMAGE_PROJECT
+  disk: $DISK_SIZE
 
 macos_instance_kind: &macos_instance_kind
   - only_if: $BUILD_METHOD == 'ours'
@@ -27,22 +31,25 @@ macos_instance_kind: &macos_instance_kind
           image: $image
           user: admin
           password: admin
+    id_script: echo "using persistent worker"
 
   - only_if: $BUILD_METHOD == 'cirrus'
     macos_instance:
       image: $image
+    id_script: echo "on cirrus infrastructure"
 
 vm_instance_kind: &vm_instance_kind
   - only_if: $BUILD_METHOD == 'ours'
     gce_instance:
       image_family: $IMAGE_FAMILY
       platform: $PLATFORM
+    id_script: echo "on our infrastructure"
 
   - only_if: $BUILD_METHOD == 'cirrus'
     compute_engine_instance:
       image: family/$IMAGE_FAMILY
       platform: $PLATFORM
-
+    id_script: echo "on cirrus infrastructure"
 
 task:
   matrix:
@@ -77,8 +84,7 @@ task:
   env:
     image: ghcr.io/cirruslabs/macos-ventura-base:latest
 
-  matrix:
-    <<: *macos_instance_kind
+  matrix: *macos_instance_kind
 
   test_script: echo test
   ip_script:
