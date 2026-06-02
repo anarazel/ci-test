@@ -1,0 +1,30 @@
+name: GitHub Actions CI
+
+on:
+  push:
+  # FIXME: Should we also run on PRs?
+
+# Restrict GITHUB_TOKEN to the minimum the jobs need: reading repo
+# contents during checkout.
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  # Never cancel in-progress runs on master to ensure all commits are tested.
+  # FIXME: Should also not cancel REL_XY_STABLE
+  cancel-in-progress: ${{ github.ref != 'refs/heads/master' }}
+
+jobs:
+
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: docker pull
+        run: |
+          docker pull ghcr.io/anarazel/pg-vm-images/gha_main/linux_debian_trixie_ci:latest
+
+      - name: podman pull
+        run: |
+          podman pull ghcr.io/anarazel/pg-vm-images/gha_main/linux_debian_trixie_ci:latest
