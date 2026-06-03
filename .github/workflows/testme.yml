@@ -17,14 +17,78 @@ concurrency:
 
 jobs:
 
+  test-plain-debian:
+    if: 0
+    runs-on: ubuntu-latest
+    container:
+      image: debian:trixie
+
+    steps:
+      - name: test
+        run: |
+          env
+
   test:
     runs-on: ubuntu-latest
 
     steps:
+      - name: info
+        run: |
+          #apt policy docker-ce docker-ce-cli
+          #sudo cat /etc/docker/daemon.json
+          sudo ps aux|grep docker
+          dpkg -L docker-ce docker-ce-cli
+          sudo systemctl status
+
+      - name: try to update docker
+        if: 1
+        run: |
+
+          REPO_URL="https://download.docker.com/linux/ubuntu"
+          GPG_KEY="/usr/share/keyrings/docker.gpg"
+          REPO_PATH="/etc/apt/sources.list.d/docker.list"
+          os_codename=$(lsb_release -cs)
+
+          curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o $GPG_KEY
+          echo "deb [arch=amd64 signed-by=$GPG_KEY] $REPO_URL ${os_codename} stable" |sudo tee $REPO_PATH
+          sudo apt-get update
+
+          sudo apt policy docker-ce docker-ce-cli
+          dpkg -l|grep docker
+          sudo apt-get -f install docker-ce docker-ce-cli
+
+      - name: docker info before
+        run: |
+          sudo docker info -f '{{ .DriverStatus }}'
+          sudo docker info
+
+      - name: docker reconfig
+        run: |
+          sudo mkdir -p /etc/docker/
+          echo '{"debug": true, "features": {"containerd-snapshotter": true }}'| sudo tee /etc/docker/daemon.json
+          sudo systemctl restart docker-ce || true
+          sudo systemctl restart docker || true
+
+      - name: docker info after
+        run: |
+          sudo docker info -f '{{ .DriverStatus }}'
+          sudo docker info
+
+      - name: info
+        run: |
+          apt policy docker-ce docker-ce-cli
+          sudo cat /etc/docker/daemon.json
+
       - name: docker pull
         run: |
-          docker pull ghcr.io/anarazel/pg-vm-images/gha_main/linux_debian_trixie_ci:latest
+          sudo docker --debug pull ghcr.io/anarazel/pg-vm-images/gha_main/linux_debian_trixie_ci:latest
 
-      - name: podman pull
+      - name: docker log
+        if: 1
         run: |
-          podman pull ghcr.io/anarazel/pg-vm-images/gha_main/linux_debian_trixie_ci:latest
+          journalctl -b -r |head -n 10000
+          docker info
+
+      - name: podman pull root
+        run: |
+          sudo podman pull ghcr.io/anarazel/pg-vm-images/gha_main/linux_debian_trixie_ci:latest
