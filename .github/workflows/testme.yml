@@ -1,7 +1,6 @@
 name: GitHub Actions CI
 
-on:
-  push:
+on: push
   # FIXME: Should we also run on PRs?
 
 # Restrict GITHUB_TOKEN to the minimum the jobs need: reading repo
@@ -17,8 +16,30 @@ concurrency:
 
 jobs:
 
+  setup:
+    if:  ${{vars.PG_CI_ENABLED == '1'}}
+    runs-on: ubuntu-latest
+    steps:
+      - name: test
+        run: |
+          env
+
+  warn-if-disabled:
+    if: ${{vars.PG_CI_ENABLED != '1'}}
+    runs-on: ubuntu-slim
+    steps:
+      - name: Warn
+        run: |
+          cat <<SUMMARY >> "$GITHUB_STEP_SUMMARY"
+          > [!CAUTION]
+          > CI is not enabled in this repository
+          >
+          > To enable, go to ${{github.server_url}}/${{github.repository}}/settings/variables/actions
+          > and create a new variable named PG_CI_ENABLED, with the value 1.
+          SUMMARY
+
   test-plain-debian:
-    if: 0
+    needs: [setup]
     runs-on: ubuntu-latest
     container:
       image: debian:trixie
@@ -28,7 +49,10 @@ jobs:
         run: |
           env
 
+
   test:
+    if: 0
+    needs: [setup]
     runs-on: ubuntu-latest
 
     steps:
