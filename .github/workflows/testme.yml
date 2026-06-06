@@ -16,43 +16,33 @@ concurrency:
 
 jobs:
 
-  setup:
-    if:  ${{vars.PG_CI_ENABLED == '1'}}
-    runs-on: ubuntu-latest
-    steps:
-      - name: test
-        run: |
-          env
+  test-containers:
+    name: Test ${{matrix.image}}
 
-  warn-if-disabled:
-    if: ${{vars.PG_CI_ENABLED != '1'}}
-    runs-on: ubuntu-slim
-    steps:
-      - name: Warn
-        run: |
-          cat <<SUMMARY >> "$GITHUB_STEP_SUMMARY"
-          > [!CAUTION]
-          > CI is not enabled in this repository
-          >
-          > To enable, go to ${{github.server_url}}/${{github.repository}}/settings/variables/actions
-          > and create a new variable named PG_CI_ENABLED, with the value 1.
-          SUMMARY
-
-  test-plain-debian:
-    needs: [setup]
     runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        image:
+          - main/linux_debian_trixie_ci
+          - slim/linux_debian_trixie_ci
+          - main/linux_debian_trixie_ci_docs
+          - slim/linux_debian_trixie_ci_docs
+
     container:
-      image: debian:trixie
+      image: ghcr.io/anarazel/pg-vm-images/${{matrix.image}}
+      options: --privileged
 
     steps:
-      - name: test
+      - name: Basic test
         run: |
+          echo $IMAGE_NAME
           env
 
 
   test:
     if: 0
-    needs: [setup]
     runs-on: ubuntu-latest
 
     steps:
