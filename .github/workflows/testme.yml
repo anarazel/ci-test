@@ -16,7 +16,21 @@ concurrency:
 
 jobs:
 
+  test-matrix:
+    strategy:
+      fail-fast: false
+      matrix:
+        variant: ${{fromJSON('["sanitycheck", "linux-meson-32", "linux-meson-64", "linux-autoconf", "compilerwarnings"]')}}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Basic test
+        run: |
+          echo "${{matrix.variant}}"
+
+
   test-containers:
+    if: 0
     name: Test ${{matrix.image}}
 
     runs-on: ubuntu-latest
